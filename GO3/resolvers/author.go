@@ -112,12 +112,9 @@ func fetchBooksByAuthorIDs(ctx context.Context, authorIDs []primitive.ObjectID) 
 func ResolveGetAuthorAndBooks(params graphql.ResolveParams) (interface{}, error) {
 	authorID, isOK := params.Args["id"].(string)
 
-	//fmt.Print("In ResolveGetAuthorAndBooks ", authorID, " ", isOK, "\n")
-
 	if !isOK {
 		return nil, nil
 	}
-	//fmt.Print("Here\n")
 	loaderResult := booksLoader.Load(params.Context, dataloader.StringKey(authorID))
 
 	loadedBooks, err := loaderResult()
@@ -126,7 +123,6 @@ func ResolveGetAuthorAndBooks(params graphql.ResolveParams) (interface{}, error)
 		return nil, err
 	}
 
-	// Convert the result to the appropriate type (slice of AuthorTodo)
 	books, ok := loadedBooks.([]models.Book)
 	if !ok {
 		log.Printf("Error asserting todo type from DataLoader: %v", err)
@@ -139,14 +135,8 @@ func ResolveGetAuthorAndBooks(params graphql.ResolveParams) (interface{}, error)
 		return nil, err
 	}
 
-	//var author models.Author
-	//authorQuery := bson.M{"_id": authorHexID}
-	//fmt.Println(authorHexID)
-	//author, err := db2.GetDataFromAuthorCollection(authorQuery)
-
 	filter := bson.M{"_id": authorHexID}
 
-	// Find the author document using the filter
 	var author models.Author
 	err = db.CollectionAuthor.FindOne(context.TODO(), filter).Decode(&author)
 	if err != nil {
@@ -161,8 +151,7 @@ func ResolveGetAuthorAndBooks(params graphql.ResolveParams) (interface{}, error)
 		log.Printf("Error fetching author: %v", err)
 		return nil, err
 	}
-	//fmt.Print("Here\n")
-	// Combine the author and todos into the result
+
 	result := map[string]interface{}{
 		"author": author,
 		"books":  books,
