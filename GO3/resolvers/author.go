@@ -16,8 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var booksLoader = dataloader.NewBatchedLoader(batchLoadBooksByAuthorIDs)
-
 func GetAuthors(p graphql.ResolveParams) (interface{}, error) {
 	return db2.GetDataFromAuthorCollection(bson.M{})
 }
@@ -36,6 +34,8 @@ func CreateNewAuthor(p graphql.ResolveParams) (interface{}, error) {
 }
 
 //////////////////////////// Data Loader /////////////////
+
+var booksLoader = dataloader.NewBatchedLoader(batchLoadBooksByAuthorIDs)
 
 func batchLoadBooksByAuthorIDs(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
 	booksByAuthor := make(map[string][]models.Book)
