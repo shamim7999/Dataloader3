@@ -8,7 +8,7 @@ import (
 	"graphql_test/db/models"
 	db2 "graphql_test/db/queries"
 	//"graphql_test/domain"
-	"log"
+	//"log"
 
 	"github.com/graph-gophers/dataloader"
 	"github.com/graphql-go/graphql"
@@ -45,14 +45,14 @@ func batchLoadBooksByAuthorIDs(ctx context.Context, keys dataloader.Keys) []*dat
 		authorID := key.String()
 		authorHexID, err := primitive.ObjectIDFromHex(authorID)
 		if err != nil {
-			log.Printf("Error parsing author ID: %v", err)
+			fmt.Printf("Error parsing author ID: %v", err)
 			continue
 		}
 		authorIDs = append(authorIDs, authorHexID)
 	}
 	books, err := fetchBooksByAuthorIDs(ctx, authorIDs)
 	if err != nil {
-		log.Printf("Error fetching todos: %v", err)
+		fmt.Printf("Error fetching todos: %v", err)
 	}
 
 	for _, book := range books {
@@ -83,18 +83,18 @@ func fetchBooksByAuthorIDs(ctx context.Context, authorIDs []primitive.ObjectID) 
 	cursor, err := db.CollectionBook.Find(context.TODO(), query)
 
 	if err != nil {
-		return nil, fmt.Errorf("error fetching books: %v", err)
+		return nil, fmt.Printf("error fetching books: %v", err)
 	}
 	defer func() {
 		if err := cursor.Close(ctx); err != nil {
-			log.Printf("error closing cursor: %v", err)
+			fmt.Printf("error closing cursor: %v", err)
 		}
 	}()
 
 	for cursor.Next(ctx) {
 		var domainBook models.Book
 		if err := cursor.Decode(&domainBook); err != nil {
-			return nil, fmt.Errorf("error decoding domain.Book: %v", err)
+			return nil, fmt.Printf("error decoding domain.Book: %v", err)
 		}
 
 		auhtorIDHex, _ := primitive.ObjectIDFromHex(domainBook.ID.Hex())
@@ -119,19 +119,19 @@ func ResolveGetAuthorAndBooks(params graphql.ResolveParams) (interface{}, error)
 
 	loadedBooks, err := loaderResult()
 	if err != nil {
-		log.Printf("Error loading todos with DataLoader: %v", err)
+		fmt.Printf("Error loading todos with DataLoader: %v", err)
 		return nil, err
 	}
 
 	books, ok := loadedBooks.([]models.Book)
 	if !ok {
-		log.Printf("Error asserting todo type from DataLoader: %v", err)
-		return nil, fmt.Errorf("failed to assert todo type")
+		fmt.Printf("Error from DataLoader: %v", err)
+		return nil, fmt.Printf("failed to assert todo type")
 	}
 
 	authorHexID, err := primitive.ObjectIDFromHex(authorID)
 	if err != nil {
-		log.Printf("Error parsing author ID: %v", err)
+		fmt.Printf("Error parsing author ID: %v", err)
 		return nil, err
 	}
 
@@ -141,14 +141,14 @@ func ResolveGetAuthorAndBooks(params graphql.ResolveParams) (interface{}, error)
 	err = db.CollectionAuthor.FindOne(context.TODO(), filter).Decode(&author)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			log.Println("Author not found")
+			fmt.Println("Author not found")
 		} else {
-			log.Fatal(err)
+			fmt.Fatal(err)
 		}
 	}
 
 	if err != nil {
-		log.Printf("Error fetching author: %v", err)
+		fmt.Printf("Error fetching author: %v", err)
 		return nil, err
 	}
 
